@@ -25,31 +25,36 @@ public class eBookAppTest {
     private String login = "log8";
     private String password = "log4";
 
-    @Test // 1
+    // Title data: title, author and year (CAN BE CHANGED BEFORE TESTS):
+    String title = "test title";
+    String author = "test author";
+    String year = "2000";
+
+    @Test // 1.1.
     public void testAShouldCorrectlyRegisterNewUser(){
         registrationAllMethods("You have been successfully registered!");
         System.out.println("test A"); //TODO: delete
     }
 
-    @Test // 2
+    @Test // 1.2.
     public void testBShouldNotRegisterSameUserTwice(){
         registrationAllMethods("This user already exist!");
         System.out.println("Test B"); //TODO: delete
     }
 
-    @Test // 3
+    @Test // 2.1.
     public void testCShouldCorrectlyLoginIfAccountExists(){
         loginAllMethods("");
         System.out.println("Test C"); //TODO: delete
     }
 
-    @Test // 4
+    @Test // 2.2.
     public void testDShouldNotLoginIfLoginOrPasswordIsIncorrectOrAccountDoesNotExist(){
         loginAllMethods("m1st4k3");
         System.out.println("Test D"); //TODO: delete
     }
 
-    @Test // 5
+    @Test // 4.1.
     public void testEShouldCorrectlyAddTitleToList(){
         // WebDriver initialization
         WebDriver driver = init("login");
@@ -57,7 +62,7 @@ public class eBookAppTest {
         // Call login() function with no mistake in login data to correctly log user in
         login(driver, "");
 
-        // Check how many titles there were on the list before adding new title
+        // Check how many titles there were on the list at the beginning
         int howManyBooksBefore = driver.findElements(By.xpath("//li[@class='titles-list__item list__item']"))
                 .size();
 
@@ -73,9 +78,9 @@ public class eBookAppTest {
         WebElement submitBtn = driver.findElement(By.xpath("//button[@name='submit-button']"));
 
         // add title to list
-        inputFields.get(0).sendKeys("test title");
-        inputFields.get(1).sendKeys("test author");
-        inputFields.get(2).sendKeys("2000");
+        inputFields.get(0).sendKeys(title);
+        inputFields.get(1).sendKeys(author);
+        inputFields.get(2).sendKeys(year);
         submitBtn.click();
 
         // wait for all elements on the list to be visible
@@ -93,13 +98,50 @@ public class eBookAppTest {
         System.out.println("TEST E"); //TODO: delete
     }
 
-    @Test // 6
+    @Test // 5.1.
     public void testFShouldCorrectlyEditTitleFromTheList(){
+        // WebDriver initialization
+        WebDriver driver = init("login");
 
-        System.out.println("TEST F"); //TODO: delete
+        // Call login() function with no mistake in login data to correctly log user in
+        login(driver, "");
+
+        // Check title data before editing:
+        String titleBefore = driver.findElement(By
+                .xpath("//div[@class='titles-list__item__title list__item__col list__item__col--primary']")).getText();
+        String authorBefore = driver.findElement(By
+                .xpath("//div[@class='titles-list__item__author list__item__col']")).getText();
+        String yearBefore = driver.findElement(By
+                .xpath("//div[@class='titles-list__item__year list__item__col']")).getText();
+        System.out.println(titleBefore);
+        System.out.println(authorBefore);
+        System.out.println(yearBefore);
+
+        // Select edit button
+        WebElement editBtn = driver.findElement(By.xpath("//button[@class='edit-btn btn--small btn btn--warning']"));
+        editBtn.click();
+
+        // Select all input fields and edit title button
+        List<WebElement> inputFields = driver.findElements(By.xpath("//input[@class='input-field__input']"));
+        WebElement editTitleBtn = driver.findElement(By.xpath("//button[@name='submit-button']"));
+
+        // put new data into title, author, year input fields, and click edit title button
+        List<String> editedTitleData = new ArrayList<>();
+        editedTitleData.add(title + " edited");
+        editedTitleData.add(author + " edited");
+        editedTitleData.add(Integer.toString(Integer.parseInt(year) - 5));
+        for(int i = 0; i < inputFields.size(); i++){
+            inputFields.get(i).clear();
+            inputFields.get(i).sendKeys(editedTitleData.get(i));
+        }
+        editTitleBtn.click();
+
+        //TODO: check if data about book has changed
+
+
     }
 
-    @Test // 7
+    @Test // 6.1.
     public void testGShouldCorrectlyRemoveTitleFromTheList(){
         // WebDriver initialization
         WebDriver driver = init("login");
@@ -107,7 +149,7 @@ public class eBookAppTest {
         // Call login() function with no mistake in login data to correctly log user in
         login(driver, "");
 
-        // Check how many titles there were on the list before removing a title
+        // Check how many titles there were on the list at the beginning
         int howManyBooksBefore = driver.findElements(By.xpath("//li[@class='titles-list__item list__item']"))
                 .size();
 
@@ -212,12 +254,7 @@ public class eBookAppTest {
         driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
     }
 
-    public void registerAssertion(String expectedMessage){
-        //TODO: put here registration tests
-    }
-
 }
 
 //TODO:
-// 1. write functionality that'll perform tests in order
-// 2. write login tests
+// get rid of shitty code
