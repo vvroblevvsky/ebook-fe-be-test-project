@@ -22,7 +22,7 @@ public class eBookAppTest {
     private String baseUrl = "https://ta-ebookrental-fe.herokuapp.com/";
 
     // login and password to register new user and login to an account (CHANGE BEFORE TESTS):
-    private String login = "log19";
+    private String login = "log22";
     private String password = "log4";
 
     // Title data: title, author and year (CAN BE CHANGED BEFORE TESTS):
@@ -117,10 +117,8 @@ public class eBookAppTest {
         List<WebElement> inputFields = driver.findElements(By.xpath("//input[@class='input-field__input']"));
 
         // put new data into title, author, year input fields, and click edit title button
-        List<String> editedTitleData = new ArrayList<>();
-        editedTitleData.add(titleEdited);
-        editedTitleData.add(authorEdited);
-        editedTitleData.add(yearEdited);
+        List<String> editedTitleData = createAndFillStringList(titleEdited, authorEdited, yearEdited);
+
         for(int i = 0; i < inputFields.size(); i++){
             inputFields.get(i).clear();
             inputFields.get(i).sendKeys(editedTitleData.get(i));
@@ -213,10 +211,7 @@ public class eBookAppTest {
         // select input fields: by Xpath:
         List<WebElement> inputFields = driver.findElements(By.xpath("//input"));
         // fill input fields with login and password
-        List<String> registerData = new ArrayList<>();
-        registerData.add(login);
-        registerData.add(password);
-        registerData.add(password);
+        List<String> registerData = createAndFillStringList(login, password, password);
         for(int i = 0; i < inputFields.size(); i++){
             inputFields.get(i).sendKeys(registerData.get(i));
         }
@@ -244,11 +239,8 @@ public class eBookAppTest {
     public boolean login(WebDriver driver, String userLogin, String userPassword){
         // Select input fields:
         List<WebElement> inputFields = driver.findElements(By.xpath("//input"));
-
         // fill input fields with login and password + click loginBtn
-        List<String> loginData = new ArrayList<>();
-        loginData.add(userLogin);
-        loginData.add(userPassword);
+        List<String> loginData = createAndFillStringList(userLogin, userPassword);
         for(int i = 0; i < inputFields.size(); i++){
             inputFields.get(i).sendKeys(loginData.get(i));
         }
@@ -290,6 +282,14 @@ public class eBookAppTest {
         btn.click();
     }
 
+    public List<String> createAndFillStringList(String... elements){
+        List<String> stringList = new ArrayList<>();
+        for(String element : elements){
+            stringList.add(element);
+        }
+        return stringList;
+    }
+
     public List<String> checkTitle(WebDriver driver){
         String title = driver.findElement(By
                 .xpath("//div[@class='titles-list__item__title list__item__col list__item__col--primary']")).getText();
@@ -297,14 +297,11 @@ public class eBookAppTest {
                 .xpath("//div[@class='titles-list__item__author list__item__col']")).getText();
         String year = driver.findElement(By
                 .xpath("//div[@class='titles-list__item__year list__item__col']")).getText();
-        List<String> titleData = new ArrayList<>();
-        titleData.add(title);
-        titleData.add(author);
-        titleData.add(year);
+        List<String> titleData = createAndFillStringList(title, author, year);
         return titleData;
     }
 
 }
 
 //TODO:
-// get rid of shitty code
+// get rid of messy code
