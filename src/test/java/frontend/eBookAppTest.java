@@ -118,14 +118,8 @@ public class eBookAppTest {
 
         // put new data into title, author, year input fields, and click edit title button
         List<String> editedTitleData = createAndFillStringList(titleEdited, authorEdited, yearEdited);
-
-        //TODO
         fillListOfWebElements(inputFields, editedTitleData);
-//        for(int i = 0; i < inputFields.size(); i++){
-//            inputFields.get(i).clear();
-//            inputFields.get(i).sendKeys(editedTitleData.get(i));
-//        }
-        //TODO
+
 
         // select edit title button and click on it:
         selectAndClickOnButton(driver, "//button[@name='submit-button']");
@@ -215,14 +209,7 @@ public class eBookAppTest {
         List<WebElement> inputFields = driver.findElements(By.xpath("//input"));
         // fill input fields with login and password
         List<String> registerData = createAndFillStringList(login, password, password);
-
-        //TODO
         fillListOfWebElements(inputFields, registerData);
-//        for(int i = 0; i < inputFields.size(); i++){
-//            inputFields.get(i).sendKeys(registerData.get(i));
-//        }
-        //TODO
-
         // select register button and click on it:
         selectAndClickOnButton(driver, "//button[@id='register-btn']");
         // wait until alert message:
@@ -249,14 +236,7 @@ public class eBookAppTest {
         List<WebElement> inputFields = driver.findElements(By.xpath("//input"));
         // fill input fields with login and password + click loginBtn
         List<String> loginData = createAndFillStringList(userLogin, userPassword);
-
-        //TODO
         fillListOfWebElements(inputFields, loginData);
-//        for(int i = 0; i < inputFields.size(); i++){
-//            inputFields.get(i).sendKeys(loginData.get(i));
-//        }
-        //TODO
-
         // select login button and click on it:
         selectAndClickOnButton(driver, "//button[@id='login-btn']");
         // wait until login is complete and page is reloaded:
