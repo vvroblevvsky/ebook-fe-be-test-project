@@ -7,13 +7,15 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+
+import javax.sound.midi.Soundbank;
+import java.sql.SQLOutput;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.*;
 
@@ -23,17 +25,17 @@ public class eBookAppTest {
     // base URL of tested website (DO NOT CHANGE):
     private final String baseUrl = "https://ta-ebookrental-fe.herokuapp.com/";
 
-    // login and password to register new user and login to an account (CHANGE BEFORE TESTS):
-    private final String login = "log32";
+    // login and password to register new user and login to an account (NEED TO BE CHANGED BEFORE TESTS!):
+    private final String login = "log35";
     private final String password = "log4";
 
     // Operations on titles:
-    // Title data: title, author and year (CAN BE CHANGED BEFORE TESTS):
+    // Title data: title, author and year (NO NEED TO CHANGE BEFORE TESTS):
     private final String title = "test title";
     private final String author = "test author";
     private final String year = "2000";
 
-    // Title data edited
+    // Title data edited (NO NEED TO CHANGE BEFORE TESTS):
     private final String titleEdited = "title edited";
     private final String authorEdited = "author edited";
     private final String yearEdited = "1995";
@@ -41,6 +43,10 @@ public class eBookAppTest {
     // Operations on copies:
     // Date to be changed while editing copy
     private LocalDate now = LocalDate.now();
+
+    // Operations on rents: (NO NEED TO CHANGE BEFORE TESTS):
+    private String customerName = "Test Customer";
+    private String editedCustomerName = "Edited Customer";
 
     @Test // 1.1.
     public void testAShouldCorrectlyRegisterNewUser() throws InterruptedException {
@@ -94,13 +100,17 @@ public class eBookAppTest {
         selectAndClickOnElement(driver, "//button[@name='submit-button']");
 
         // wait for all elements on the list to be visible
-        WebDriverWait wait = new WebDriverWait(driver, 3);
-        wait.until(ExpectedConditions.visibilityOfAllElements(driver.findElements(By
-                .xpath("//li[@class='titles-list__item list__item']"))));
+//        WebDriverWait wait = new WebDriverWait(driver, 3); //TODO: delete?
+//        wait.until(ExpectedConditions.visibilityOfAllElements(driver.findElements(By
+//                .xpath("//li[@class='titles-list__item list__item']"))));
 
-        // check if the size of the list has increased
+        // Check how many titles there are after adding one:
+        sleepBeforeChecking();
         int howManyBooksAfter = howManyElements(driver, "//li[@class='titles-list__item list__item']");
-        assertTrue(howManyBooksAfter > howManyBooksBefore);
+
+        // Assertion:
+        assertTrue(howManyBooksBefore < howManyBooksAfter);
+        assertEquals(howManyBooksBefore + 1, howManyBooksAfter);
 
         // Close WebDriver
         driver.close();
@@ -149,7 +159,7 @@ public class eBookAppTest {
         WebDriver driver = initWebDriverAndLogin(login, password);
 
         // Obtain title id
-        String titleId = getItemId(driver, "//li[@class='titles-list__item list__item']");
+        String titleId = getItemId(driver, "//li[@class='titles-list__item list__item']", "title");
 
         // Select show copies button and click on it
         selectAndClickOnElement(driver, "//button[@class='show-copies-btn btn--small btn btn--primary']");
@@ -177,19 +187,19 @@ public class eBookAppTest {
         // check how many copies there were at the beginning:
         int howManyCopiesBefore = howManyElements(driver, "//ul[@class='items-list list']");
 
-        // Select and click Add New button:
+        // Select and click "Add New" button:
         selectAndClickOnElement(driver, "//button[@name='add-item-button']");
 
         // Information about purchase date is completed automatically - let's only confirm it by selecting and clicking
-        // "add copy" button:
+        // "Add Copy" button:
         selectAndClickOnElement(driver, "//button[@name='submit-button']");
 
-        // check how many copies there are after adding one:
+        // Check how many copies there are after adding one:
         sleepBeforeChecking();
         int howManyCopiesAfter = howManyElements(driver, "//ul[@class='items-list list']");
 
         // Assertion:
-        assertNotEquals(howManyCopiesBefore, howManyCopiesAfter);
+        assertTrue(howManyCopiesBefore < howManyCopiesAfter);
         assertEquals(howManyCopiesBefore + 1, howManyCopiesAfter);
 
         // Close WebDriver
@@ -197,43 +207,41 @@ public class eBookAppTest {
         System.out.println("TEST H"); //TODO: delete
     }
 
-
-
-
-
-
-
-
-
-
     @Test
     public void testIShouldCorrectlyEditCopyFromTheList() throws InterruptedException {
         // Move to copies screen:
         WebDriver driver = moveToCopies();
 
+        // Check purchase date of given copy before editing:
+        String purchaseDateBefore = driver.findElement(By.xpath("//div[@class='items-list__item__purchase-date " +
+                "list__item__col list__item__col--primary']")).getText();
+
         // Select and click "Edit" button:
         selectAndClickOnElement(driver, "//button[@class='edit-btn btn--small btn btn--warning']");
 
         // Select "Purchase date" input field and change the date
+        sleepBeforeChecking();
         selectAndClickOnElement(driver, "//input[@name='purchase-date']");
-//        List<WebElement> daysBtns = driver.findElements(By.xpath(""));
+
+        // Change the value in "Purchase date" field:
+        getRandomDateFromDatePicker(driver, "//span[contains(@class, 'weekend')] | //span[@class='cell day']",
+                "//span[contains(@class, 'cell day selected')]");
+
+        // Select and click "Edit copy" button:
+        selectAndClickOnElement(driver, "//button[@name='submit-button']");
+
+        // Check purchase date of given copy after editing:
+        sleepBeforeChecking();
+        String purchaseDateAfter = driver.findElement(By.xpath("//div[@class='items-list__item__purchase-date " +
+                "list__item__col list__item__col--primary']")).getText();
+
+        // Assertions:
+        assertNotEquals(purchaseDateAfter, purchaseDateBefore);
 
         // Close WebDriver
-//        driver.close();
-//        System.out.println("TEST I"); //TODO: delete
+        driver.close();
+        System.out.println("TEST I"); //TODO: delete
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
     @Test
     public void testJShouldCorrectlyMoveToRentsScreen() throws InterruptedException {
@@ -241,7 +249,7 @@ public class eBookAppTest {
         WebDriver driver = moveToCopies();
 
         // Obtain copy ID:
-        String copyId = getItemId(driver, "//li[@class='items-list__item list__item']");
+        String copyId = getItemId(driver, "//li[@class='items-list__item list__item']", "item");
 
         // Select and click "Show history" button:
         selectAndClickOnElement(driver, "//button[@class='show-rents-btn btn--small btn btn--primary']");
@@ -261,6 +269,133 @@ public class eBookAppTest {
     }
 
     @Test
+    public void testKShouldCorrectlyAddRentToList() throws InterruptedException {
+        // Move to rents screen:
+        WebDriver driver = moveToRents();
+
+        // Check how many rents there were at the beginning:
+        int howManyRentsBefore = howManyElements(driver, "//li[@class='rents-list__rent list__item']");
+        System.out.println("Rents before: " + howManyRentsBefore);
+
+        // Select and click on "Rent This Copy" button:
+        selectAndClickOnElement(driver, "//button[@name='add-rent-button']");
+
+        // Select and fill "Customer name" input field:
+        WebElement customerNameInputField = driver.findElement(By.xpath("//input[@name='customer-name']"));
+        customerNameInputField.sendKeys(customerName);
+
+        // Select and click on "Add copy" button:
+        selectAndClickOnElement(driver, "//button[@name='submit-button']");
+
+        // Check how many rents there are after adding one:
+        sleepBeforeChecking();
+        int howManyRentsAfter = howManyElements(driver, "//li[@class='rents-list__rent list__item']");
+        System.out.println("Rents after: " + howManyRentsAfter);
+
+        // Assertion:
+        assertTrue(howManyRentsBefore < howManyRentsAfter);
+        assertEquals(howManyRentsBefore + 1, howManyRentsAfter);
+
+        // Close WebDriver
+        driver.close();
+        System.out.println("TEST K"); //TODO: delete
+    }
+
+
+
+
+
+
+
+    @Test //TODO: FIX!
+    public void testLShouldCorrectlyEditRentFromTheList() throws InterruptedException {
+        // Move to rents screen:
+        WebDriver driver = moveToRents();
+
+        // Check customer name, rent date and expiration date of given copy before editing:
+        List<WebElement> rentDataBefore = driver.findElements(By.xpath("//div[contains(@class, " +
+                "'rents-list__rent__customer')] | //div[contains(@class, 'rents-list__rent__rent-date')]"));
+
+        for (WebElement element : rentDataBefore){
+            System.out.println(element.getText());
+        }
+
+        // Select and click "Edit" button:
+        selectAndClickOnElement(driver, "//button[@class='edit-btn btn--small btn btn--warning']");
+
+        // Select "Customer name", "Rent date" and "Expiration date" input fields:
+        WebElement customerName = driver.findElement(By.xpath("//input[@name='customer-name']"));
+        WebElement rentDate = driver.findElement(By.xpath("//input[@name='rent-date']"));
+        WebElement expirationDate = driver.findElement(By.xpath("//input[@name='expiration-date']"));
+
+        // Edit data in "Customer name", "Rent date" and "Expiration date" input fields:
+        sleepBeforeChecking();
+        rentDate.click();
+        getRandomDateFromDatePicker(driver, "//span[contains(@class, 'weekend')] | //span[@class='cell day']",
+                "//span[contains(@class, 'cell day selected')]");
+
+        sleepBeforeChecking();
+        expirationDate.click();
+        getRandomDateFromDatePicker(driver, "//span[contains(@class, 'weekend')] | //span[@class='cell day']",
+                "//span[contains(@class, 'cell day selected')]");
+
+        customerName.clear();
+        customerName.sendKeys(editedCustomerName);
+
+        // Select and click "Edit copy" button:
+        selectAndClickOnElement(driver, "//button[@name='submit-button']");
+
+        // Check customer name, rent date and expiration date of given copy after editing:
+        sleepBeforeChecking();
+        List<WebElement> rentDataAfter = driver.findElements(By.xpath("//div[contains(@class, " +
+                "'rents-list__rent__customer')] | //div[contains(@class, 'rents-list__rent__rent-date')]"));
+
+        for (WebElement element : rentDataAfter){
+            System.out.println(element.getText());
+        }
+
+        // Assertions:
+        for (int i = 0; i < rentDataBefore.size(); i++){
+            assertNotEquals(rentDataBefore.get(i).getText(), rentDataAfter.get(i).getText());
+        }
+
+        // Close WebDriver
+//        driver.close(); //TODO: uncomment
+        System.out.println("TEST L"); //TODO: delete
+    }
+
+
+
+
+
+
+
+
+    @Test
+    public void testXShouldCorrectlyRemoveRentFromTheList() throws InterruptedException {
+        // Move to rents screen:
+        WebDriver driver = moveToRents();
+
+        // Check how many rents there were on the list at the beginning
+        int howManyRentsBefore = howManyElements(driver, "//li[@class='rents-list__rent list__item']");
+
+        // Select and click on "Remove" button:
+        selectAndClickOnElement(driver, "//button[@class='remove-btn btn--small btn btn--error']");
+
+        // Check how many rents there are after removing one:
+        sleepBeforeChecking();
+        int howManyRentsAfter = howManyElements(driver, "//li[@class='rents-list__rent list__item']");
+
+        // Assertions:
+        assertTrue(howManyRentsBefore > howManyRentsAfter);
+        assertEquals(howManyRentsBefore - 1, howManyRentsAfter);
+
+        // Close WebDriver
+        driver.close();
+        System.out.println("TEST X"); //TODO: delete
+    }
+
+    @Test
     public void testYShouldCorrectlyRemoveCopyFromTheList() throws InterruptedException {
         // Move to copies screen:
         WebDriver driver = moveToCopies();
@@ -271,10 +406,8 @@ public class eBookAppTest {
         // Select and click "Remove" button
         selectAndClickOnElement(driver, "//button[@class='remove-btn btn--small btn btn--error']");
 
-        // Wait for page to reload after removing element:
-        sleepBeforeChecking();
-
         // Check how many copies there are after deleting one
+        sleepBeforeChecking();
         int howManyCopiesAfter = howManyElements(driver, "//li[@class='items-list__item list__item']");
 
         // Assertions:
@@ -298,10 +431,8 @@ public class eBookAppTest {
         // Select remove button and click on it:
         selectAndClickOnElement(driver, "//button[@class='remove-btn btn--small btn btn--error']");
 
-        // Wait for page to reload after removing element:
-        sleepBeforeChecking();
-
         // Check how many elements there are on the list after clicking "Remove" button
+        sleepBeforeChecking();
         int howManyTitlesAfter = driver.findElements(By.xpath("//li[@class='titles-list__item list__item']"))
                 .size();
 
@@ -431,13 +562,21 @@ public class eBookAppTest {
     public WebDriver moveToCopies() throws InterruptedException {
         // call initWebDriverAndLogin() method
         WebDriver driver = initWebDriverAndLogin(login, password);
-
         // Select show copies button and click on it
         selectAndClickOnElement(driver, "//button[@class='show-copies-btn btn--small btn btn--primary']");
-
         // wait for page to reload:
         sleepBeforeChecking();
+        // return WebDriver
+        return driver;
+    }
 
+    public WebDriver moveToRents() throws InterruptedException {
+        // Move to the copies screen
+        WebDriver driver = moveToCopies();
+        // Select show history button and click on it:
+        selectAndClickOnElement(driver, "//button[@class='show-rents-btn btn--small btn btn--primary']");
+        // Wait for page to reload:
+        sleepBeforeChecking();
         // return WebDriver
         return driver;
     }
@@ -447,23 +586,29 @@ public class eBookAppTest {
         return countOfElements;
     }
 
-    public String getItemId(WebDriver driver, String xPath){
-        String id = driver.findElement(By.xpath(xPath)).getAttribute("id").replace("item-", "");
+    public String getItemId(WebDriver driver, String xPath, String kindOfElement){
+        String id = driver.findElement(By.xpath(xPath)).getAttribute("id").replace(kindOfElement + "-", "");
         return id;
     }
 
-    //TODO: do I need this?
-    public List<String> convertCurrentDate(LocalDate date){
-        String year = Year.now().toString();
-        String month = now.getMonth().toString().substring(0,3);
-        String day = String.valueOf(date.getDayOfMonth());
-        List<String> currentDateList = createAndFillStringList(year, month, day);
-        System.out.println(currentDateList);
-        return currentDateList;
+    public void getRandomDateFromDatePicker(WebDriver driver, String allDatesXPath, String excludedDateXPath){
+        // Create List<WebElement> to obtain all clickable dates to chose from:
+        List<WebElement> daysToSelectFrom = driver.findElements(By.xpath(allDatesXPath));
+        // Exclude currently selected date:
+        WebElement dayToExclude = driver.findElement(By.xpath(excludedDateXPath));
+        for(int i = 0; i < daysToSelectFrom.size(); i++){
+            if (daysToSelectFrom.get(i).getText().equals(dayToExclude.getText())){
+                daysToSelectFrom.remove(i);
+            }
+        }
+        // Select and click on a random day to change the date
+        Random random = new Random();
+        int randomPick = random.nextInt(daysToSelectFrom.size());
+        daysToSelectFrom.get(randomPick).click();
     }
-
 
 }
 
 //TODO:
 // get rid of messy code
+// change code for titles tests to make them look similiar to copies and rents tests - comments, etc.
